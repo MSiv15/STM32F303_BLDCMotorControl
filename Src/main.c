@@ -61,6 +61,30 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+void uart1_putc(uint8_t c)
+{
+  while (!LL_USART_IsActiveFlag_TXE(USART1));
+  LL_USART_TransmitData8(USART1, c);
+}
+
+uint8_t uart1_getc(void)
+{
+  while (!LL_USART_IsActiveFlag_RXNE(USART1));
+  return LL_USART_ReceiveData8(USART1);
+}
+
+uint16_t SPI1_TransmitReceive16(uint16_t TxData)
+{
+  uint16_t RxData;
+  LL_GPIO_ResetOutputPin(SPI_NSS_GPIO_Port,SPI_NSS_Pin);
+  while (!LL_SPI_IsActiveFlag_TXE(SPI1));
+  LL_SPI_TransmitData16(SPI1, TxData);
+  while (!LL_SPI_IsActiveFlag_RXNE(SPI1));
+  RxData = LL_SPI_ReceiveData16(SPI1);
+  LL_GPIO_SetOutputPin(SPI_NSS_GPIO_Port,SPI_NSS_Pin);
+  return RxData;
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -87,6 +111,10 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 
+  // xprintf allocation
+  xdev_out(uart1_putc);
+  xdev_in(uart1_getc);
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -107,6 +135,61 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
+  while (LL_GPIO_IsInputPinSet(USER_SW_GPIO_Port,USER_SW_Pin));
+  xprintf("Hello world!\n");
+
+  // controller initialization
+  period = LL_TIM_GetAutoReload(TIM1);
+
+  // ADC2 Initialization
+  WRITE_REG(ADC2->DIFSEL,0U); // LL_ADC_SetChannelSingleDiffが未定義動作を起こすので、レジスタに直接書き込む
+  LL_ADC_EnableInternalRegulator(ADC2);
+  delay_us(10);
+  LL_ADC_StartCalibration(ADC2, LL_ADC_SINGLE_ENDED);
+  while (LL_ADC_IsCalibrationOnGoing(ADC2));
+  LL_ADC_Enable(ADC2);
+  while (!LL_ADC_IsActiveFlag_ADRDY(ADC2));
+  // JSQRをクリア
+  LL_ADC_INJ_StopConversion(ADC2);
+  while (LL_ADC_INJ_IsStopConversionOngoing(ADC2));
+  // CubeMXが出力するコードが不適切なため、ADC2のJSQRを改めて設定する
+  LL_ADC_DisableIT_JQOVF(ADC2);
+  LL_ADC_INJ_ConfigQueueContext(ADC2,
+                                LL_ADC_INJ_TRIG_EXT_TIM1_TRGO2,
+                                LL_ADC_INJ_TRIG_EXT_RISING,
+                                LL_ADC_INJ_SEQ_SCAN_ENABLE_4RANKS,
+                                LL_ADC_CHANNEL_1,
+                                LL_ADC_CHANNEL_2,
+                                LL_ADC_CHANNEL_3,
+                                LL_ADC_CHANNEL_4);
+  // Inject変換の外部トリガを許可
+  LL_ADC_INJ_StartConversion(ADC2);
+
+  // Enable ADC Interrupt
+  LL_ADC_EnableIT_JEOS(ADC2);
+//  LL_TIM_EnableIT_UPDATE(TIM1);
+
+  // Set ADC Sampling Timing
+  LL_TIM_OC_SetCompareCH4(TIM1, (uint32_t)(3599 - 90));
+
+  // Enable PWM Career
+  LL_TIM_EnableCounter(TIM1);
+  LL_TIM_SetRepetitionCounter(TIM1,1);
+
+  // Enable PWM Channels
+  LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH1);
+  LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH1N);
+  LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH2);
+  LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH2N);
+  LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH3);
+  LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH3N);
+
+  // Enable SPI Channel
+  LL_SPI_Enable(SPI1);
+
+  // Enable EXTI Interrupt
+  LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_3);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -116,6 +199,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    FOC_LowFreqTask();
   }
   /* USER CODE END 3 */
 }

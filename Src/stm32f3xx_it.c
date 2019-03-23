@@ -84,6 +84,8 @@ void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
 
+  FOC_EmergencyStop();
+
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
   {
@@ -98,6 +100,8 @@ void HardFault_Handler(void)
 void MemManage_Handler(void)
 {
   /* USER CODE BEGIN MemoryManagement_IRQn 0 */
+
+  FOC_EmergencyStop();
 
   /* USER CODE END MemoryManagement_IRQn 0 */
   while (1)
@@ -114,6 +118,8 @@ void BusFault_Handler(void)
 {
   /* USER CODE BEGIN BusFault_IRQn 0 */
 
+  FOC_EmergencyStop();
+
   /* USER CODE END BusFault_IRQn 0 */
   while (1)
   {
@@ -128,6 +134,8 @@ void BusFault_Handler(void)
 void UsageFault_Handler(void)
 {
   /* USER CODE BEGIN UsageFault_IRQn 0 */
+
+  FOC_EmergencyStop();
 
   /* USER CODE END UsageFault_IRQn 0 */
   while (1)
@@ -210,6 +218,8 @@ void EXTI3_IRQHandler(void)
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_3);
     /* USER CODE BEGIN LL_EXTI_LINE_3 */
     
+    is_warning_reported = true;
+
     /* USER CODE END LL_EXTI_LINE_3 */
   }
   /* USER CODE BEGIN EXTI3_IRQn 1 */
@@ -228,6 +238,26 @@ void ADC1_2_IRQHandler(void)
   
   /* USER CODE BEGIN ADC1_2_IRQn 1 */
 
+  if (LL_ADC_IsActiveFlag_JEOS(ADC2) == 1)
+  {
+    LL_ADC_ClearFlag_JEOS(ADC2);
+
+    FOC_HighFreqTask();
+  }
+  else
+  {
+    LL_ADC_WriteReg(ADC2,ISR,0);
+  }
+
+  if (LL_TIM_GetDirection(TIM1) == LL_TIM_COUNTERDIRECTION_DOWN)
+  {
+    t_calc = (period - LL_TIM_GetCounter(TIM1));
+  }
+  else
+  {
+    t_calc = (period + LL_TIM_GetCounter(TIM1));
+  }
+
   /* USER CODE END ADC1_2_IRQn 1 */
 }
 
@@ -237,6 +267,8 @@ void ADC1_2_IRQHandler(void)
 void TIM1_UP_TIM16_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_UP_TIM16_IRQn 0 */
+
+  LL_TIM_ClearFlag_UPDATE(TIM1);
 
   /* USER CODE END TIM1_UP_TIM16_IRQn 0 */
   
