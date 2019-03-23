@@ -1,0 +1,6 @@
+[submodule "Libraries/Eigen"]
+	path = Libraries/Eigen
+	url = git@github.com:MSiv15/eigen.git
+[submodule "Libraries/MyDSP"]
+	path = Libraries/MyDSP
+	url = git@github.com:MSiv15/MyDSP.git
