@@ -1,14 +1,14 @@
 /*
- * motor_control_wrapper.cpp
+ * motor_control_tasks.cpp
  *
  *  Created on: 2018/07/19
  *      Author: Shibasaki
  *
- * C++関数のC言語に対するインターフェースおよびハードウェア依存処理の抽象化
+ * 初期化・停止処理および定期的に実行される処理
  */
 
 #include "motor_control_foc.hpp"
-#include "motor_control_wrapper.h"
+#include "motor_control_tasks.h"
 #include "main.h"
 
 #define DEBUG_ON

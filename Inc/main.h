@@ -50,28 +50,9 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include "motor_control_wrapper.h"
+#include "motor_control_tasks.h"
 #include "xprintf.h"
-void uart1_putc(uint8_t c);
-uint8_t uart1_getc(void);
-uint16_t SPI1_TransmitReceive16(uint16_t TxData);
-
-static inline void delay_us(uint16_t time)
-{
-  LL_TIM_SetCounter(TIM6,0);
-  LL_TIM_EnableCounter(TIM6);
-  while (LL_TIM_GetCounter(TIM6)<time);
-  LL_TIM_DisableCounter(TIM6);
-}
-
-static inline void delay_ms(uint32_t time)
-{
-#ifdef USE_HAL_DRIVER
-  HAL_Delay(time);
-#else
-  LL_mDelay(time);
-#endif
-}
+#include "peripheral_utility.h"
 
 /* USER CODE END Includes */
 

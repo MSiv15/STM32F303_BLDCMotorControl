@@ -1,17 +1,18 @@
 /*
- * motor_control_wrapper.h
+ * motor_control_tasks.h
  *
  *  Created on: 2018/07/19
  *      Author: Shibasaki
  */
 
-#ifndef MOTOR_CONTROL_WRAPPER_H_
-#define MOTOR_CONTROL_WRAPPER_H_
+#ifndef MOTOR_CONTROL_TASKS_H_
+#define MOTOR_CONTROL_TASKS_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#include <stdint.h>
 #include <stdbool.h>
 
 extern uint16_t adc_data1, adc_data2, adc_data3, adc_data4;
@@ -62,4 +63,5 @@ void FOC_HighFreqTask(void);
 #ifdef __cplusplus
 }
 #endif
-#endif /* MOTOR_CONTROL_WRAPPER_H_ */
+
+#endif /* MOTOR_CONTROL_TASKS_H_ */
