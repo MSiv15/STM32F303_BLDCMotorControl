@@ -9,7 +9,7 @@
 - MCU: STM32F303CC
 - Gate driver: DRV8305N
 - MOSFET: FDBL86561_F085
-- Pin assign: Please see [CubeMX configuration file](STM32F303_BLDCMotorControl.ioc).
+- Pin assignment: Please see [CubeMX configuration file](STM32F303_BLDCMotorControl.ioc).
 
 ## License
 This software is released under the MIT License, see [LICENSE](LICENSE).
